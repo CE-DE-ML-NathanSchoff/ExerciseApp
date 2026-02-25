@@ -1,93 +1,133 @@
 import customtkinter as ctk
-import sqlite3
+import json
+import heapq
 
 # ==========================================
-# 1. DATABASE BACKEND (The Fetcher)
+# 1. DSA BACKEND (Algorithms & Data Structures)
 # ==========================================
-def get_exercises_by_category(category_id):
-    """Connects to the DB, fetches exercises for a specific category, and returns a list."""
-    conn = sqlite3.connect('workout_data.db')
-    cursor = conn.cursor()
+def load_data():
+    """Loads the NoSQL Master JSON database into memory."""
+    try:
+        with open('workout_database.json', 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return []
+
+def get_top_k_exercises(equipment, specific_muscle, k=3):
+    """Uses subsetting and a priority queue to find the top workouts."""
+    database = load_data()
     
-    # The '?' safely injects the category_id into the query
-    cursor.execute('''
-        SELECT exercise_name, target_area, secondary_muscles, notes 
-        FROM Exercises 
-        WHERE category_id = ?
-    ''', (category_id,))
+    # 1. Subsetting: Filter the full dataset down to match the user's path
+    subset = [
+        ex for ex in database 
+        if ex["equipment_type"] == equipment 
+        and ex["targeting"]["specific_muscle"] == specific_muscle
+    ]
     
-    results = cursor.fetchall()
-    conn.close()
-    return results
+    # 2. Top K Elements Pattern via Priority Queue (Heap)
+    # heapq.nlargest automatically pushes our subset into a heap and pops the top 'k' 
+    # elements based on the intensity_score. It's highly efficient.
+    top_workouts = heapq.nlargest(
+        k, 
+        subset, 
+        key=lambda x: x["metrics"]["intensity_score"]
+    )
+    
+    return top_workouts
 
 # ==========================================
-# 2. UI FRONTEND (The Visuals)
+# 2. UI FRONTEND (The State Machine)
 # ==========================================
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
 app = ctk.CTk()
-app.geometry("800x500")
-app.title("Chest Workout Database")
+app.geometry("800x600")
+app.title("Algorithmic Workout Generator")
 
-# Set up the grid
-app.grid_rowconfigure(0, weight=1)
-app.grid_columnconfigure(1, weight=1)
+container = ctk.CTkFrame(app)
+container.pack(fill="both", expand=True, padx=40, pady=40)
 
-# --- The Magic Function: Updates the Main Screen ---
-def show_exercises(category_id, category_name):
-    # 1. Destroy everything currently sitting inside the main_frame
-    for widget in main_frame.winfo_children():
+def clear_screen():
+    for widget in container.winfo_children():
         widget.destroy()
-        
-    # 2. Draw the new category title
-    title = ctk.CTkLabel(main_frame, text=category_name, font=("Arial", 24, "bold"))
-    title.pack(pady=(20, 10))
+
+# --- STATE 1: Equipment ---
+def show_equipment_selection():
+    clear_screen()
+    ctk.CTkLabel(container, text="Step 1: Select Equipment", font=("Arial", 28, "bold")).pack(pady=(40, 30))
     
-    # 3. Ask the database for the data
-    exercises = get_exercises_by_category(category_id)
+    ctk.CTkButton(container, text="Free Weights", width=250, height=50, 
+                  command=lambda: show_muscle_groups("Free Weights")).pack(pady=15)
+    ctk.CTkButton(container, text="Body Weights", width=250, height=50, 
+                  command=lambda: show_muscle_groups("Body Weights")).pack(pady=15)
+    ctk.CTkButton(container, text="Machine Weights", width=250, height=50, 
+                  command=lambda: show_muscle_groups("Machine Weights")).pack(pady=15)
+
+# --- STATE 2: Muscle Group ---
+def show_muscle_groups(equipment_choice):
+    clear_screen()
+    ctk.CTkLabel(container, text=f"Equipment: {equipment_choice}", font=("Arial", 16, "italic"), text_color="gray").pack()
+    ctk.CTkLabel(container, text="Step 2: Select Muscle Group", font=("Arial", 28, "bold")).pack(pady=(20, 30))
     
-    # 4. Handle empty categories (like Home Workout right now)
-    if not exercises:
-        ctk.CTkLabel(main_frame, text="No exercises found in this category yet.", font=("Arial", 14, "italic")).pack(pady=20)
-        return
+    ctk.CTkButton(container, text="Chest & Triceps", width=250, height=50, 
+                  command=lambda: show_specific_muscles(equipment_choice, "Chest")).pack(pady=10)
+    ctk.CTkButton(container, text="Back & Biceps", width=250, height=50, 
+                  command=lambda: show_specific_muscles(equipment_choice, "Back")).pack(pady=10)
 
-    # 5. Loop through the database results and draw a "Card" for each one
-    for ex in exercises:
-        name, target, secondary, notes = ex
+    ctk.CTkButton(container, text="← Back", width=100, fg_color="#555555", hover_color="#333333", 
+                  command=show_equipment_selection).pack(pady=(30, 0))
+
+# --- STATE 3: Specific Muscle ---
+def show_specific_muscles(equipment_choice, broad_group):
+    clear_screen()
+    ctk.CTkLabel(container, text="Step 3: Target Area", font=("Arial", 28, "bold")).pack(pady=(40, 30))
+    
+    # Dynamically generate the specific muscle buttons based on the broad group
+    if broad_group == "Chest":
+        options = ["Upper Chest (Clavicular)", "Middle Chest (Sternal Mid)", "Lower Chest (Sternal Lower)"]
+    elif broad_group == "Back":
+        # These match the exact strings from your CSV import
+        options = ["Lats", "Upper Back / Rhomboids / Middle Traps", "Lower Back", "Biceps"]
         
-        # Create a visually distinct box (frame) for each exercise
-        card = ctk.CTkFrame(main_frame, corner_radius=10, fg_color="#2b2b2b")
-        card.pack(pady=10, padx=20, fill="x") # fill="x" makes it stretch horizontally
+    for option in options:
+        ctk.CTkButton(container, text=option, width=300, height=40, 
+                      command=lambda opt=option: show_results(equipment_choice, opt)).pack(pady=10)
+
+    ctk.CTkButton(container, text="← Back", width=100, fg_color="#555555", hover_color="#333333", 
+                  command=lambda: show_muscle_groups(equipment_choice)).pack(pady=(30, 0))
+
+# --- STATE 4: Output / Process & Merge ---
+def show_results(equipment_choice, specific_muscle):
+    clear_screen()
+    ctk.CTkLabel(container, text="Top Recommended Exercises", font=("Arial", 28, "bold")).pack(pady=(20, 10))
+    
+    # Run our algorithm to get the top 3 best workouts!
+    results = get_top_k_exercises(equipment_choice, specific_muscle, k=3)
+    
+    if not results:
+        ctk.CTkLabel(container, text="No exercises found for this combination.", font=("Arial", 16, "italic")).pack(pady=30)
+    else:
+        scroll_frame = ctk.CTkScrollableFrame(container, width=550, height=300)
+        scroll_frame.pack(pady=10)
         
-        # Populate the card with the database info
-        ctk.CTkLabel(card, text=name, font=("Arial", 18, "bold"), text_color="#3a7ebf").pack(anchor="w", padx=15, pady=(10, 0))
-        ctk.CTkLabel(card, text=f"Target: {target}", font=("Arial", 14)).pack(anchor="w", padx=15)
-        ctk.CTkLabel(card, text=f"Secondary: {secondary}", font=("Arial", 12)).pack(anchor="w", padx=15)
-        
-        if notes:
-            ctk.CTkLabel(card, text=f"Notes: {notes}", font=("Arial", 12, "italic")).pack(anchor="w", padx=15, pady=(0, 10))
-        else:
-            ctk.CTkLabel(card, text="").pack(anchor="w", padx=15, pady=(0, 5)) # Just padding if no notes
+        for index, ex in enumerate(results):
+            color = "#2fa572" if index == 0 else "#2b2b2b" # Highlight the #1 choice
+            card = ctk.CTkFrame(scroll_frame, fg_color=color, corner_radius=8)
+            card.pack(pady=5, padx=10, fill="x")
+            
+            # Extract data from the JSON document structure
+            name = ex["exercise_name"]
+            score = ex["metrics"]["intensity_score"]
+            notes = ex.get("notes", "No notes available.")
+            
+            ctk.CTkLabel(card, text=f"#{index + 1}: {name}", font=("Arial", 18, "bold")).pack(anchor="w", padx=15, pady=(10, 0))
+            ctk.CTkLabel(card, text=f"Intensity: {score}/10", font=("Arial", 14)).pack(anchor="w", padx=15)
+            ctk.CTkLabel(card, text=f"Notes: {notes}", font=("Arial", 12, "italic"), text_color="#cccccc", wraplength=480, justify="left").pack(anchor="w", padx=15, pady=(5, 10))
 
-# --- Build the Sidebar (Column 0) ---
-sidebar_frame = ctk.CTkFrame(app, width=200, corner_radius=0)
-sidebar_frame.grid(row=0, column=0, sticky="nsew")
+    ctk.CTkButton(container, text="Start Over", width=150, fg_color="#bf3a3a", hover_color="#8c2828", 
+                  command=show_equipment_selection).pack(pady=(30, 0))
 
-ctk.CTkLabel(sidebar_frame, text="Categories", font=("Arial", 20, "bold")).pack(pady=(20, 20))
-
-# Notice the 'lambda:' - This stops the function from running immediately upon launch
-# and instead waits for the user to actually click the button.
-ctk.CTkButton(sidebar_frame, text="Home Workout", command=lambda: show_exercises(1, "Home Workout")).pack(pady=10, padx=20)
-ctk.CTkButton(sidebar_frame, text="Body Workout", command=lambda: show_exercises(2, "Body Workout")).pack(pady=10, padx=20)
-ctk.CTkButton(sidebar_frame, text="Weight Workout", command=lambda: show_exercises(3, "Weight Workout")).pack(pady=10, padx=20)
-
-# --- Build the Main Content Area (Column 1) ---
-main_frame = ctk.CTkFrame(app)
-main_frame.grid(row=0, column=1, padx=20, pady=20, sticky="nsew")
-
-welcome_label = ctk.CTkLabel(main_frame, text="Welcome! Select a workout category from the left.", font=("Arial", 16))
-welcome_label.pack(pady=50)
-
-# Run the application
+# Boot up the app
+show_equipment_selection()
 app.mainloop()

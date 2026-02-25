@@ -1,0 +1,781 @@
+[
+    {
+        "exercise_name": "Incline Chest Press Machine",
+        "equipment_type": "Machine Weights",
+        "targeting": {
+            "primary_group": "Chest & Triceps",
+            "specific_muscle": "Upper Chest (Clavicular)",
+            "secondary_muscles": [
+                "Anterior Deltoids",
+                "Triceps"
+            ]
+        },
+        "metrics": {
+            "intensity_score": 10,
+            "mechanics": "Compound"
+        },
+        "notes": "Only machine explicitly stated to target the upper pecs."
+    },
+    {
+        "exercise_name": "Decline Chest Press Machine",
+        "equipment_type": "Machine Weights",
+        "targeting": {
+            "primary_group": "Chest & Triceps",
+            "specific_muscle": "Lower Chest (Sternal Lower)",
+            "secondary_muscles": [
+                "Triceps",
+                "Anterior Deltoids"
+            ]
+        },
+        "metrics": {
+            "intensity_score": 10,
+            "mechanics": "Compound"
+        },
+        "notes": "Only machine explicitly defined as targeting lower pecs."
+    },
+    {
+        "exercise_name": "Chest-Focused Dips",
+        "equipment_type": "Body Weights",
+        "targeting": {
+            "primary_group": "Chest & Triceps",
+            "specific_muscle": "Lower Chest (Sternal Lower)",
+            "secondary_muscles": [
+                "Triceps",
+                "Anterior Deltoids"
+            ]
+        },
+        "metrics": {
+            "intensity_score": 8,
+            "mechanics": "Compound"
+        },
+        "notes": "Leaning forward increases chest involvement."
+    },
+    {
+        "exercise_name": "Scapular Pull-Ups",
+        "equipment_type": "Body Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Upper Back / Rhomboids / Middle Traps",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Wide-Grip Inverted Rows",
+        "equipment_type": "Body Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Upper Back / Rhomboids / Middle Traps",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Horizontal Bodyweight Rows",
+        "equipment_type": "Body Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Upper Back / Rhomboids / Middle Traps",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Reverse Snow Angels",
+        "equipment_type": "Body Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Upper Back / Rhomboids / Middle Traps",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Pull-Ups",
+        "equipment_type": "Body Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Lats",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Chin-Ups",
+        "equipment_type": "Body Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Lats",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Neutral Grip Pull-Ups",
+        "equipment_type": "Body Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Lats",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Archer Pull-Ups",
+        "equipment_type": "Body Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Lats",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Back Extensions",
+        "equipment_type": "Body Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Lower Back",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Supermans",
+        "equipment_type": "Body Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Lower Back",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Hip Hinge Walkouts",
+        "equipment_type": "Body Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Lower Back",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Chin-Ups",
+        "equipment_type": "Body Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Biceps",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Close-Grip Inverted Rows",
+        "equipment_type": "Body Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Biceps",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Bodyweight Curls",
+        "equipment_type": "Body Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Biceps",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Barbell Bent-Over Rows",
+        "equipment_type": "Free Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Upper Back / Rhomboids / Middle Traps",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Dumbbell Rows",
+        "equipment_type": "Free Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Upper Back / Rhomboids / Middle Traps",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Seal Rows",
+        "equipment_type": "Free Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Upper Back / Rhomboids / Middle Traps",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Face Pulls",
+        "equipment_type": "Free Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Upper Back / Rhomboids / Middle Traps",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Kettlebell Gorilla Rows",
+        "equipment_type": "Free Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Upper Back / Rhomboids / Middle Traps",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Single-Arm Dumbbell Row",
+        "equipment_type": "Free Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Lats",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Pendlay Row",
+        "equipment_type": "Free Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Lats",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Kroc Rows",
+        "equipment_type": "Free Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Lats",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Meadows Rows",
+        "equipment_type": "Free Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Lats",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Dumbbell Pullovers",
+        "equipment_type": "Free Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Lats",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Deadlift",
+        "equipment_type": "Free Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Lower Back",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Romanian Deadlift",
+        "equipment_type": "Free Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Lower Back",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Kettlebell Swing",
+        "equipment_type": "Free Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Lower Back",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Good Mornings",
+        "equipment_type": "Free Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Lower Back",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Dumbbell Curls",
+        "equipment_type": "Free Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Biceps",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Barbell Curls",
+        "equipment_type": "Free Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Biceps",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Hammer Curls",
+        "equipment_type": "Free Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Biceps",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Incline Dumbbell Curls",
+        "equipment_type": "Free Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Biceps",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Drag Curls",
+        "equipment_type": "Free Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Biceps",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Preacher Curls",
+        "equipment_type": "Free Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Biceps",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Seated Cable Row",
+        "equipment_type": "Machine Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Upper Back / Rhomboids / Middle Traps",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Reverse Pec Deck Fly",
+        "equipment_type": "Machine Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Upper Back / Rhomboids / Middle Traps",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Machine Row",
+        "equipment_type": "Machine Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Upper Back / Rhomboids / Middle Traps",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Cable Face Pull",
+        "equipment_type": "Machine Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Upper Back / Rhomboids / Middle Traps",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Iso-Lateral Row Machine",
+        "equipment_type": "Machine Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Upper Back / Rhomboids / Middle Traps",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Lat Pulldown",
+        "equipment_type": "Machine Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Lats",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Straight-Arm Cable Pulldown",
+        "equipment_type": "Machine Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Lats",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Single-Arm Cable Lat Row",
+        "equipment_type": "Machine Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Lats",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Iso-Lateral Lat Pulldown",
+        "equipment_type": "Machine Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Lats",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Back Extension Machine",
+        "equipment_type": "Machine Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Lower Back",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Reverse Hyperextension",
+        "equipment_type": "Machine Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Lower Back",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Cable Pull-Through",
+        "equipment_type": "Machine Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Lower Back",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Machine Deadlift",
+        "equipment_type": "Machine Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Lower Back",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Cable Curls",
+        "equipment_type": "Machine Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Biceps",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Single-Arm Cable Curls",
+        "equipment_type": "Machine Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Biceps",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Preacher Curl Machine",
+        "equipment_type": "Machine Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Biceps",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Biceps Curl Machine",
+        "equipment_type": "Machine Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Biceps",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    },
+    {
+        "exercise_name": "Cable Hammer Curls",
+        "equipment_type": "Machine Weights",
+        "targeting": {
+            "primary_group": "Back & Biceps",
+            "specific_muscle": "Biceps",
+            "secondary_muscles": []
+        },
+        "metrics": {
+            "intensity_score": 5,
+            "mechanics": "Compound"
+        },
+        "notes": "Imported from CSV."
+    }
+]
