@@ -1,0 +1,6 @@
+.\venv2\Scripts\Activate.ps1
+py -m uvicorn server:app --reload
+
+.\venv2\Scripts\Activate.ps1
+py appbd.py
+

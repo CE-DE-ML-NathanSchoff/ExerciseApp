@@ -1,0 +1,43 @@
+import json
+from pymongo import MongoClient
+import certifi
+
+# ==========================================
+# 1. Connect to the Cloud
+# ==========================================
+# PASTE YOUR CONNECTION STRING HERE
+# IMPORTANT: Replace <username> and <password> with your actual details. 
+# Remove the < > brackets!
+uri = "mongodb+srv://wolfismyfav:s0mOimlI7PbSox0h@cluster0.xxxxx.mongodb.net/?retryWrites=true&w=majority"
+
+# Connect to the client using certifi for SSL safety
+client = MongoClient(uri, tlsCAFile=certifi.where())
+
+# ==========================================
+# 2. Setup the Database and Collection
+# ==========================================
+# MongoDB automatically creates these if they don't exist yet!
+db = client['fitness_app']           # The name of your database
+collection = db['exercises']         # The NoSQL equivalent of a "table"
+
+# ==========================================
+# 3. Load the Local JSON Data
+# ==========================================
+print("Loading local JSON data...")
+with open('data/workout_database.json', 'r', encoding='utf-8') as file:
+    workout_data = json.load(file)
+
+# ==========================================
+# 4. Blast it to MongoDB
+# ==========================================
+print("Uploading to MongoDB Atlas...")
+
+# Optional: Clear the collection first so we don't create duplicates if you run this twice
+collection.delete_many({}) 
+
+# Insert the massive list of JSON objects directly into the cloud!
+collection.insert_many(workout_data)
+
+print(f"Success! {len(workout_data)} exercises are now live in the cloud!")
+
+
