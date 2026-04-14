@@ -1,16 +1,21 @@
 from fastapi import FastAPI
 from pymongo import MongoClient
 import certifi
+import os
+from dotenv import load_dotenv
 
-# Initialize the API
-app = FastAPI(title="Fitness Generator API")
+# 1. Unlock the vault
+load_dotenv()
 
-# Connect to MongoDB (Paste your Atlas connection string here!)
-uri = "mongodb+srv://wolfismyfav:s0mOimlI7PbSox0h@cluster0.xxxxx.mongodb.net/?retryWrites=true&w=majority"
+# 2. Grab the real connection string securely
+uri = os.getenv("MONGO_URI")
+
+# 3. Connect to the cloud
 client = MongoClient(uri, tlsCAFile=certifi.where())
 db = client['fitness_app']
 collection = db['exercises']
 
+app = FastAPI()
 @app.get("/")
 def health_check():
     return {"status": "API is online and connected to MongoDB!"}

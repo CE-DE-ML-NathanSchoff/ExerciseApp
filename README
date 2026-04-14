@@ -1,6 +1,66 @@
-.\venv2\Scripts\Activate.ps1
+How to Run the Application
+To successfully run this application, you must run the backend server and the frontend UI simultaneously in two separate terminal windows.
+
+ Prerequisites
+Before running, ensure you have your secure .env file created in the root directory. It should contain your MongoDB connection string:
+MONGO_URI=mongodb+srv://<username>:<password>@cluster0...
+
+ Terminal 1: Start the Backend Server
+This terminal keeps the pipeline to the MongoDB cloud wide open.
+
+Open your terminal in the root ExerciseApp folder.
+
+Activate your virtual environment:
+
+Bash
+.\\venv2\\Scripts\\Activate.ps1
+Boot up the FastAPI server:
+
+Bash
 py -m uvicorn server:app --reload
+Status: The server is now listening for requests at http://127.0.0.1:8000.
 
-.\venv2\Scripts\Activate.ps1
+📱 Terminal 2: Launch the Frontend Application
+This terminal launches the actual visual window.
+
+Open a new, separate terminal tab.
+
+Activate your virtual environment again (every new terminal needs activation):
+
+Bash
+.\\venv2\\Scripts\\Activate.ps1
+Run the CustomTkinter UI script:
+
+Bash
 py appbd.py
+Status: The graphical user interface will open, allowing you to select equipment and muscle groups to query the live cloud database.
+"""
 
+with open("README.md", "w", encoding="utf-8") as f:
+f.write(content)
+
+print("README.md created successfully")
+
+Your Markdown file is ready
+[file-tag: code-generated-file-0-1776109475559918974]
+
+This `README.md` is now perfectly tailored to your current project. It uses a clean Mermaid tree diagram to show the file structure visually, and explicitly breaks down the two-terminal setup process so that anyone (or Future Nathan!) can clone this repo and boot it up instantly without getting lost. 
+
+Since GitHub has built-in support for Mermaid.js, that tree block will actually render into a beautiful visual flowchart right on your repository's front page once you upload it!
+
+### How to push this to GitHub right now
+Since we just created this new file on your local machine, let's blast it up to your cloud repository on the `newest` branch to finish the day out strong.
+
+Make sure your terminal is sitting in the root `ExerciseApp` folder and run this 3-step sequence:
+
+**1. Stage the new README:**
+```bash
+git add README.md
+2. Take the snapshot:
+
+Bash
+git commit -m "Added interactive README with Mermaid architecture tree and run instructions"
+3. Blast it to the cloud:
+
+Bash
+git push

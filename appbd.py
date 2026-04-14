@@ -6,63 +6,62 @@ import os
 # ==========================================
 # 1. GLOBAL STATE & CONFIG
 # ==========================================
+ASSET_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets')
+
+IMAGE_MAP = {
+    # CHEST
+    "Upper Chest (Clavicular)": {"front": "Tricept_front.png", "back": "Tricepts_back.png"},
+    "Middle Chest (Sternal Mid)": {"front": "Tricept_front.png", "back": "Tricepts_back.png"},
+    "Lower Chest (Sternal Lower)": {"front": "Tricept_front.png", "back": "Tricepts_back.png"},
+    
+    # BACK
+    "Lats": {"front": "Back_front.png", "back": "Back_back.png"},
+    "Upper Back / Rhomboids / Middle Traps": {"front": "Back_front.png", "back": "Back_back.png"},
+    "Lower Back": {"front": "Back_front.png", "back": "Back_back.png"},
+    
+    # LEGS
+    "Legs": {"front": "Legs_front.png", "back": "Legs_back.png"},
+    
+    # DEFAULT
+    "Default": {"front": "1canadite.png", "back": "2canadite.png"}
+}
+
+# The state variables that control what the UI shows
 current_view = "Front"
-current_mask_name = None
-current_intensity = 0
+current_selected_muscle = "Default"
 
 # The URL of your local FastAPI server
 API_URL = "http://127.0.0.1:8000/api/top-workouts"
 
 # ==========================================
-# 2. IMAGE PROCESSING ENGINE (Pillow)
+# 2. THE NEW IMAGE SWAP ENGINE
 # ==========================================
-def generate_heatmap_image():
-    """Layers the base body and the tinted muscle mask."""
-    global current_view, current_mask_name, current_intensity
-    
-    # Select base image
-    base_file = "body_front.png" if current_view == "Front" else "body_back.png"
-    base_path = os.path.join("assets", base_file)
-    
-    try:
-        base_image = Image.open(base_path).convert("RGBA")
-    except FileNotFoundError:
-        print(f"Error: Could not find {base_path}. Please check your assets folder.")
-        return None
-
-    # If we have a mask selected, try to load and tint it
-    if current_mask_name:
-        mask_path = os.path.join("assets", current_mask_name)
-        if os.path.exists(mask_path):
-            # Determine color based on intensity
-            if current_intensity >= 8: hex_color = "#bf3a3a"  # Red
-            elif current_intensity >= 5: hex_color = "#e67300"  # Orange
-            else: hex_color = "#2fa572"  # Green
-                
-            mask_image = Image.open(mask_path).convert("RGBA")
-            color_block = Image.new("RGBA", mask_image.size, hex_color)
-            
-            # Tint the white mask
-            tinted_mask = Image.composite(color_block, Image.new("RGBA", mask_image.size, (0,0,0,0)), mask_image)
-            
-            # Paste it onto the base body
-            base_image.paste(tinted_mask, (0, 0), tinted_mask)
-        else:
-            print(f"Notice: Mask '{mask_path}' not found. Showing base body only.")
-
-    # Convert to a format CustomTkinter can display
-    # Resize to fit nicely on the left side of the screen
-    base_image.thumbnail((400, 700), Image.Resampling.LANCZOS)
-    return ctk.CTkImage(light_image=base_image, dark_image=base_image, size=base_image.size)
-
 def update_display():
-    """Forces the UI to redraw the image."""
-    new_image = generate_heatmap_image()
-    if new_image:
-        image_label.configure(image=new_image, text="")
+    """Instantly grabs the correct pre-colored image and pushes it to the UI."""
+    global current_selected_muscle, current_view
+    
+    # 1. Find the images for the currently selected muscle
+    image_data = IMAGE_MAP.get(current_selected_muscle, IMAGE_MAP["Default"])
+    
+    # 2. Pick the front or back file depending on the UI Toggle Switch
+    if current_view == "Front":
+        target_filename = image_data["front"]
+    else:
+        target_filename = image_data["back"]
         
+    img_path = os.path.join(ASSET_DIR, target_filename)
+    
+    # 3. Load it into the UI
+    try:
+        pil_image = Image.open(img_path)
+        # CustomTkinter sizes it perfectly for your left panel
+        ctk_img = ctk.CTkImage(light_image=pil_image, size=(350, 600))
+        image_label.configure(image=ctk_img, text="")
+    except FileNotFoundError:
+        image_label.configure(image="", text=f"❌ Missing Image:\n{target_filename}")
+
 def on_toggle_change(value):
-    """Fired when the user clicks Front or Back."""
+    """Fired when the user clicks Front or Back toggle."""
     global current_view
     current_view = value
     update_display()
@@ -85,7 +84,7 @@ view_toggle = ctk.CTkSegmentedButton(image_panel, values=["Front", "Back"], comm
 view_toggle.set("Front")
 view_toggle.pack(pady=(20, 10))
 
-image_label = ctk.CTkLabel(image_panel, text="Load an image to begin")
+image_label = ctk.CTkLabel(image_panel, text="Loading anatomy...")
 image_label.pack(expand=True, pady=10)
 
 # --- RIGHT PANEL: The Interactive Menu ---
@@ -101,6 +100,11 @@ def clear_menu():
 # ==========================================
 def show_equipment_selection():
     clear_menu()
+    # Reset image to default when starting over!
+    global current_selected_muscle
+    current_selected_muscle = "Default"
+    update_display()
+    
     ctk.CTkLabel(menu_panel, text="Step 1: Select Equipment", font=("Arial", 28, "bold")).pack(pady=(40, 30))
     
     for eq in ["Free Weights", "Body Weights", "Machine Weights"]:
@@ -119,29 +123,30 @@ def show_muscle_groups(equipment):
 
     ctk.CTkButton(menu_panel, text="← Back", width=100, fg_color="#555555", 
                   command=show_equipment_selection).pack(pady=(40, 0))
-
+    
 def show_specific_muscles(equipment, broad_group):
     clear_menu()
     ctk.CTkLabel(menu_panel, text="Step 3: Target Area", font=("Arial", 28, "bold")).pack(pady=(40, 30))
     
     if broad_group == "Chest":
         options = ["Upper Chest (Clavicular)", "Middle Chest (Sternal Mid)", "Lower Chest (Sternal Lower)"]
-        mask_prefix = "mask_chest" 
     else:
         options = ["Lats", "Upper Back / Rhomboids / Middle Traps", "Lower Back", "Biceps"]
-        mask_prefix = "mask_back" # You can make this more specific later!
         
     for option in options:
-        # We pass the mask name so the image updates correctly
         ctk.CTkButton(menu_panel, text=option, width=300, height=40, 
-                      command=lambda opt=option, prefix=mask_prefix: show_results(equipment, opt, f"{prefix}.png")).pack(pady=10)
+                      command=lambda opt=option: show_results(equipment, opt)).pack(pady=10)
 
     ctk.CTkButton(menu_panel, text="← Back", width=100, fg_color="#555555", 
                   command=lambda: show_muscle_groups(equipment)).pack(pady=(30, 0))
 
-def show_results(equipment, muscle, mask_file):
+def show_results(equipment, muscle):
     clear_menu()
-    global current_mask_name, current_intensity
+    global current_selected_muscle
+    
+    # THE MAGIC: We update the global state and immediately trigger the image swap!
+    current_selected_muscle = muscle
+    update_display()
     
     ctk.CTkLabel(menu_panel, text="Top Results", font=("Arial", 28, "bold")).pack(pady=(20, 10))
     
@@ -156,12 +161,6 @@ def show_results(equipment, muscle, mask_file):
     if not results:
         ctk.CTkLabel(menu_panel, text="No exercises found in the database.").pack(pady=30)
     else:
-        # Update our Image Globals based on the top result!
-        top_score = results[0]["metrics"]["intensity_score"]
-        current_mask_name = mask_file
-        current_intensity = top_score
-        update_display() # Trigger the image redraw!
-        
         # Display the text results
         scroll_frame = ctk.CTkScrollableFrame(menu_panel, width=450, height=350)
         scroll_frame.pack(pady=10)
