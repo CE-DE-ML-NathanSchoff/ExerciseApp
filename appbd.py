@@ -2,72 +2,147 @@ import customtkinter as ctk
 from PIL import Image
 import requests
 import os
+import datetime
+import json
+import random
 
 # ==========================================
 # 1. GLOBAL STATE & CONFIG
 # ==========================================
 ASSET_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets')
+SCHEDULE_FILE = "schedule.json"
+API_URL = "http://127.0.0.1:8000/api/top-workouts"
 
 IMAGE_MAP = {
-    # CHEST
     "Upper Chest (Clavicular)": {"front": "Tricept_front.png", "back": "Tricepts_back.png"},
     "Middle Chest (Sternal Mid)": {"front": "Tricept_front.png", "back": "Tricepts_back.png"},
     "Lower Chest (Sternal Lower)": {"front": "Tricept_front.png", "back": "Tricepts_back.png"},
-    
-    # BACK
     "Lats": {"front": "Back_front.png", "back": "Back_back.png"},
     "Upper Back / Rhomboids / Middle Traps": {"front": "Back_front.png", "back": "Back_back.png"},
     "Lower Back": {"front": "Back_front.png", "back": "Back_back.png"},
-    
-    # LEGS
     "Legs": {"front": "Legs_front.png", "back": "Legs_back.png"},
-    
-    # DEFAULT
+    "Quads": {"front": "Legs_front.png", "back": "Legs_back.png"},
+    "Hamstrings": {"front": "Legs_front.png", "back": "Legs_back.png"},
+    "Calves": {"front": "Legs_front.png", "back": "Legs_back.png"},
+    "Glutes": {"front": "Legs_front.png", "back": "Legs_back.png"},
     "Default": {"front": "1canadite.png", "back": "2canadite.png"}
 }
 
-# The state variables that control what the UI shows
+SPLIT_MAP = {
+    "Push": ["Upper Chest (Clavicular)", "Middle Chest (Sternal Mid)", "Lower Chest (Sternal Lower)", "Triceps", "Front Delts"],
+    "Pull": ["Lats", "Upper Back / Rhomboids / Middle Traps", "Lower Back", "Biceps"],
+    "Legs": ["Quads", "Hamstrings", "Calves", "Glutes"],
+    "Upper": ["Upper Chest (Clavicular)", "Middle Chest (Sternal Mid)", "Lats", "Upper Back / Rhomboids / Middle Traps", "Biceps", "Triceps"],
+    "Lower": ["Quads", "Hamstrings", "Calves", "Glutes"],
+    "Cardio": ["PLACEHOLDER_CARDIO"]
+}
+
+# NEW: The Training Goal Matrix
+GOAL_MAP = {
+    "Strength": {"sets": (3, 4), "reps": (3, 6), "weight": "Max Weight"},
+    "Hypertrophy": {"sets": (3, 5), "reps": (6, 10), "weight": "Medium Weight"},
+    "Endurance": {"sets": (4, 8), "reps": (12, 25), "weight": "Low / Body Weight"}
+}
+
 current_view = "Front"
 current_selected_muscle = "Default"
-
-# The URL of your local FastAPI server
-API_URL = "http://127.0.0.1:8000/api/top-workouts"
+weekly_schedule = {}
 
 # ==========================================
-# 2. THE NEW IMAGE SWAP ENGINE
+# 2. JSON STATE MANAGER
+# ==========================================
+def load_schedule():
+    global weekly_schedule
+    weekly_schedule = {day: {"is_active": False, "split_type": None, "workouts": []} 
+                       for day in ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]}
+    
+    if os.path.exists(SCHEDULE_FILE):
+        try:
+            with open(SCHEDULE_FILE, "r") as f:
+                saved_data = json.load(f)
+                if saved_data and isinstance(saved_data, dict): 
+                    weekly_schedule = saved_data
+        except json.JSONDecodeError:
+            print(f"⚠️ Warning: {SCHEDULE_FILE} was empty or corrupted. Starting fresh.")
+
+def save_schedule():
+    with open(SCHEDULE_FILE, "w") as f:
+        json.dump(weekly_schedule, f, indent=4)
+
+# ==========================================
+# 3. IMAGE SWAP ENGINE & HOVER MECHANICS
 # ==========================================
 def update_display():
-    """Instantly grabs the correct pre-colored image and pushes it to the UI."""
     global current_selected_muscle, current_view
-    
-    # 1. Find the images for the currently selected muscle
     image_data = IMAGE_MAP.get(current_selected_muscle, IMAGE_MAP["Default"])
     
-    # 2. Pick the front or back file depending on the UI Toggle Switch
-    if current_view == "Front":
-        target_filename = image_data["front"]
-    else:
-        target_filename = image_data["back"]
-        
+    target_filename = image_data["front"] if current_view == "Front" else image_data["back"]
     img_path = os.path.join(ASSET_DIR, target_filename)
     
-    # 3. Load it into the UI
     try:
         pil_image = Image.open(img_path)
-        # CustomTkinter sizes it perfectly for your left panel
         ctk_img = ctk.CTkImage(light_image=pil_image, size=(350, 600))
         image_label.configure(image=ctk_img, text="")
     except FileNotFoundError:
         image_label.configure(image="", text=f"❌ Missing Image:\n{target_filename}")
 
 def on_toggle_change(value):
-    """Fired when the user clicks Front or Back toggle."""
     global current_view
     current_view = value
     update_display()
 
+def on_hover_enter(event, muscle):
+    global current_selected_muscle
+    current_selected_muscle = muscle
+    update_display()
+
+def on_hover_leave(event):
+    global current_selected_muscle
+    current_selected_muscle = "Default"
+    update_display()
+
 # ==========================================
-# 3. UI SETUP & SPLIT SCREEN
+# 4. ALGORITHMIC GENERATOR
+# ==========================================
+def fetch_workout_for_muscle(muscle):
+    if muscle == "PLACEHOLDER_CARDIO":
+        return {"exercise_name": "30 Min Treadmill / Cycling", "metrics": {"intensity_score": 5}, "notes": "Steady state cardio."}
+    
+    eq = random.choice(["Free Weights", "Machine Weights", "Body Weights"])
+    try:
+        response = requests.get(API_URL, params={"equipment": eq, "muscle": muscle, "k": 3})
+        if response.status_code == 200 and response.json():
+            return random.choice(response.json())
+    except:
+        pass
+    return {"exercise_name": f"Generic {muscle} Exercise", "metrics": {"intensity_score": 0}, "notes": "Placeholder due to DB miss."}
+
+def generate_workouts_for_split(split_name, goal_name):
+    target_muscles = SPLIT_MAP.get(split_name, [])
+    selected_muscles = random.choices(target_muscles, k=4) 
+    
+    daily_routine = []
+    for m in selected_muscles:
+        workout = fetch_workout_for_muscle(m)
+        workout["target_muscle_tag"] = m 
+        
+        # NEW: Inject Sets, Reps, and Weight based on the Goal
+        if m == "PLACEHOLDER_CARDIO" or split_name == "Cardio":
+            workout["sets"] = 1
+            workout["reps"] = "30 Mins"
+            workout["weight_profile"] = "Body Weight"
+        else:
+            s_min, s_max = GOAL_MAP[goal_name]["sets"]
+            r_min, r_max = GOAL_MAP[goal_name]["reps"]
+            workout["sets"] = random.randint(s_min, s_max)
+            workout["reps"] = random.randint(r_min, r_max)
+            workout["weight_profile"] = GOAL_MAP[goal_name]["weight"]
+            
+        daily_routine.append(workout)
+    return daily_routine
+
+# ==========================================
+# 5. UI SETUP & SPLIT SCREEN
 # ==========================================
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
@@ -76,7 +151,6 @@ app = ctk.CTk()
 app.geometry("1100x700")
 app.title("Enterprise Fitness Generator")
 
-# --- LEFT PANEL: The Anatomy Diagram ---
 image_panel = ctk.CTkFrame(app, width=450)
 image_panel.pack(side="left", fill="y", padx=20, pady=20)
 
@@ -87,7 +161,6 @@ view_toggle.pack(pady=(20, 10))
 image_label = ctk.CTkLabel(image_panel, text="Loading anatomy...")
 image_label.pack(expand=True, pady=10)
 
-# --- RIGHT PANEL: The Interactive Menu ---
 menu_panel = ctk.CTkFrame(app)
 menu_panel.pack(side="right", fill="both", expand=True, padx=20, pady=20)
 
@@ -96,92 +169,173 @@ def clear_menu():
         widget.destroy()
 
 # ==========================================
-# 4. THE MENU STATE MACHINE
+# 6. APP NAVIGATION & MENUS
 # ==========================================
-def show_equipment_selection():
+def show_home_screen():
     clear_menu()
-    # Reset image to default when starting over!
-    global current_selected_muscle
-    current_selected_muscle = "Default"
-    update_display()
+    on_hover_leave(None)
     
-    ctk.CTkLabel(menu_panel, text="Step 1: Select Equipment", font=("Arial", 28, "bold")).pack(pady=(40, 30))
-    
-    for eq in ["Free Weights", "Body Weights", "Machine Weights"]:
-        ctk.CTkButton(menu_panel, text=eq, width=250, height=50, 
-                      command=lambda e=eq: show_muscle_groups(e)).pack(pady=15)
+    today = datetime.date.today()
+    date_str = today.strftime("%A, %B %d, %Y")
 
-def show_muscle_groups(equipment):
-    clear_menu()
-    ctk.CTkLabel(menu_panel, text=f"Equipment: {equipment}", text_color="gray").pack(pady=(20,0))
-    ctk.CTkLabel(menu_panel, text="Step 2: Muscle Group", font=("Arial", 28, "bold")).pack(pady=(10, 30))
-    
-    ctk.CTkButton(menu_panel, text="Chest & Triceps", width=250, height=50, 
-                  command=lambda: show_specific_muscles(equipment, "Chest")).pack(pady=10)
-    ctk.CTkButton(menu_panel, text="Back & Biceps", width=250, height=50, 
-                  command=lambda: show_specific_muscles(equipment, "Back")).pack(pady=10)
+    ctk.CTkLabel(menu_panel, text="Enterprise Fitness", font=("Arial", 32, "bold")).pack(pady=(60, 5))
+    ctk.CTkLabel(menu_panel, text=f"Today is {date_str}", text_color="gray", font=("Arial", 16)).pack(pady=(0, 40))
 
-    ctk.CTkButton(menu_panel, text="← Back", width=100, fg_color="#555555", 
-                  command=show_equipment_selection).pack(pady=(40, 0))
-    
-def show_specific_muscles(equipment, broad_group):
+    ctk.CTkButton(menu_panel, text="Quick Daily Workout", width=300, height=50, 
+                  command=show_quick_daily_prompt).pack(pady=10)
+    ctk.CTkButton(menu_panel, text="Current Weekly Schedule", width=300, height=50, 
+                  command=show_weekly_grid).pack(pady=10)
+
+# --- QUICK DAILY WORKOUT ---
+def show_quick_daily_prompt():
     clear_menu()
-    ctk.CTkLabel(menu_panel, text="Step 3: Target Area", font=("Arial", 28, "bold")).pack(pady=(40, 30))
+    ctk.CTkLabel(menu_panel, text="Quick Daily Generator", font=("Arial", 28, "bold")).pack(pady=(40, 30))
+    ctk.CTkLabel(menu_panel, text="What are we hitting today?", font=("Arial", 16)).pack(pady=(0, 20))
     
-    if broad_group == "Chest":
-        options = ["Upper Chest (Clavicular)", "Middle Chest (Sternal Mid)", "Lower Chest (Sternal Lower)"]
-    else:
-        options = ["Lats", "Upper Back / Rhomboids / Middle Traps", "Lower Back", "Biceps"]
+    for split in ["Upper", "Lower", "Cardio"]:
+        ctk.CTkButton(menu_panel, text=split, width=250, height=50, 
+                      command=lambda s=split: show_quick_daily_goal(s)).pack(pady=10)
+                      
+    ctk.CTkButton(menu_panel, text="← Home", width=100, fg_color="#555555", command=show_home_screen).pack(pady=(30, 0))
+
+def show_quick_daily_goal(split_choice):
+    clear_menu()
+    ctk.CTkLabel(menu_panel, text="Training Goal", font=("Arial", 28, "bold")).pack(pady=(40, 30))
+    ctk.CTkLabel(menu_panel, text=f"Split: {split_choice}", text_color="#2fa572", font=("Arial", 16)).pack(pady=(0, 20))
+    
+    for goal in ["Strength", "Hypertrophy", "Endurance"]:
+        ctk.CTkButton(menu_panel, text=goal, width=250, height=50, 
+                      command=lambda g=goal: process_quick_daily(split_choice, g)).pack(pady=10)
+                      
+    ctk.CTkButton(menu_panel, text="← Back", width=100, fg_color="#555555", command=show_quick_daily_prompt).pack(pady=(30, 0))
+
+def process_quick_daily(split_choice, goal_choice):
+    clear_menu()
+    ctk.CTkLabel(menu_panel, text="Consulting Database...", font=("Arial", 24, "bold"), text_color="#2fa572").pack(pady=100)
+    app.update() 
+    
+    routine = generate_workouts_for_split(split_choice, goal_choice)
+    render_interactive_checklist(f"{split_choice} Day ({goal_choice})", routine, show_home_screen)
+
+# --- WEEKLY SCHEDULE WIZARD ---
+def show_weekly_wizard():
+    clear_menu()
+    ctk.CTkLabel(menu_panel, text="Schedule Architect", font=("Arial", 28, "bold")).pack(pady=(20, 20))
+    
+    # 1. Choose Split Sequence
+    ctk.CTkLabel(menu_panel, text="1. Select Weekly Flow:", font=("Arial", 16)).pack(anchor="w", padx=40)
+    split_var = ctk.StringVar(value="Push, Pull, Legs")
+    split_dropdown = ctk.CTkOptionMenu(menu_panel, variable=split_var, values=["Push, Pull, Legs", "Upper, Lower", "Upper, Lower, Cardio"])
+    split_dropdown.pack(pady=(5, 10), padx=40, fill="x")
+    
+    # 2. Choose Training Goal
+    ctk.CTkLabel(menu_panel, text="2. Select Training Goal:", font=("Arial", 16)).pack(anchor="w", padx=40)
+    goal_var = ctk.StringVar(value="Hypertrophy")
+    goal_dropdown = ctk.CTkOptionMenu(menu_panel, variable=goal_var, values=["Strength", "Hypertrophy", "Endurance"])
+    goal_dropdown.pack(pady=(5, 15), padx=40, fill="x")
+
+    # 3. Toggle Days
+    ctk.CTkLabel(menu_panel, text="3. Set Active Training Days:", font=("Arial", 16)).pack(anchor="w", padx=40)
+    days_of_week = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    day_switches = {}
+    
+    switches_frame = ctk.CTkFrame(menu_panel, fg_color="transparent")
+    switches_frame.pack(pady=5, padx=40, fill="x")
+    
+    for day in days_of_week:
+        var = ctk.BooleanVar(value=True if day not in ["Saturday", "Sunday"] else False)
+        switch = ctk.CTkSwitch(switches_frame, text=day, variable=var)
+        switch.pack(pady=2, anchor="w")
+        day_switches[day] = var
+
+    # Build Button
+    def execute_build():
+        clear_menu()
+        ctk.CTkLabel(menu_panel, text="Generating Week...", font=("Arial", 24, "bold"), text_color="#2fa572").pack(pady=100)
+        app.update()
         
-    for option in options:
-        ctk.CTkButton(menu_panel, text=option, width=300, height=40, 
-                      command=lambda opt=option: show_results(equipment, opt)).pack(pady=10)
-
-    ctk.CTkButton(menu_panel, text="← Back", width=100, fg_color="#555555", 
-                  command=lambda: show_muscle_groups(equipment)).pack(pady=(30, 0))
-
-def show_results(equipment, muscle):
-    clear_menu()
-    global current_selected_muscle
-    
-    # THE MAGIC: We update the global state and immediately trigger the image swap!
-    current_selected_muscle = muscle
-    update_display()
-    
-    ctk.CTkLabel(menu_panel, text="Top Results", font=("Arial", 28, "bold")).pack(pady=(20, 10))
-    
-    # --- FETCH FROM FASTAPI SERVER ---
-    try:
-        response = requests.get(API_URL, params={"equipment": equipment, "muscle": muscle, "k": 3})
-        results = response.json()
-    except Exception as e:
-        ctk.CTkLabel(menu_panel, text="Error connecting to server. Is FastAPI running?", text_color="red").pack(pady=20)
-        results = []
-
-    if not results:
-        ctk.CTkLabel(menu_panel, text="No exercises found in the database.").pack(pady=30)
-    else:
-        # Display the text results
-        scroll_frame = ctk.CTkScrollableFrame(menu_panel, width=450, height=350)
-        scroll_frame.pack(pady=10)
+        sequence_choice = split_var.get().split(", ")
+        current_goal = goal_var.get()
+        seq_idx = 0
         
-        for index, ex in enumerate(results):
-            color = "#2fa572" if index == 0 else "#2b2b2b"
-            card = ctk.CTkFrame(scroll_frame, fg_color=color)
-            card.pack(pady=5, padx=10, fill="x")
-            
-            name = ex["exercise_name"]
-            score = ex["metrics"]["intensity_score"]
-            notes = ex.get("notes", "No notes available.")
-            
-            ctk.CTkLabel(card, text=f"#{index + 1}: {name}", font=("Arial", 16, "bold")).pack(anchor="w", padx=10, pady=(10, 0))
-            ctk.CTkLabel(card, text=f"Intensity: {score}/10").pack(anchor="w", padx=10)
-            ctk.CTkLabel(card, text=notes, text_color="gray", wraplength=400, justify="left").pack(anchor="w", padx=10, pady=(0, 10))
+        for d in days_of_week:
+            if day_switches[d].get():
+                current_split = sequence_choice[seq_idx % len(sequence_choice)]
+                seq_idx += 1
+                weekly_schedule[d] = {
+                    "is_active": True, 
+                    "split_type": current_split, 
+                    "workouts": generate_workouts_for_split(current_split, current_goal)
+                }
+            else:
+                weekly_schedule[d] = {"is_active": False, "split_type": None, "workouts": []}
+                
+        save_schedule()
+        show_weekly_grid()
 
-    ctk.CTkButton(menu_panel, text="Start Over", fg_color="#bf3a3a", hover_color="#8c2828", 
-                  command=show_equipment_selection).pack(pady=(20, 0))
+    ctk.CTkButton(menu_panel, text="Generate Schedule", width=300, height=40, fg_color="#bf3a3a", hover_color="#8c2828", command=execute_build).pack(pady=15)
+    ctk.CTkButton(menu_panel, text="Cancel", width=100, fg_color="#555555", command=show_weekly_grid).pack(pady=5)
+
+def show_weekly_grid():
+    clear_menu()
+    on_hover_leave(None)
+    ctk.CTkLabel(menu_panel, text="Weekly Schedule", font=("Arial", 28, "bold")).pack(pady=(20, 10))
+
+    grid_frame = ctk.CTkFrame(menu_panel, fg_color="transparent")
+    grid_frame.pack(pady=5, fill="x", padx=10)
+
+    for i, day in enumerate(["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]):
+        day_data = weekly_schedule.get(day, {})
+        is_active = day_data.get("is_active", False)
+        
+        text_color = "white" if is_active else "gray"
+        split_text = day_data.get("split_type") if is_active else "Rest Day"
+        
+        ctk.CTkLabel(grid_frame, text=day, font=("Arial", 14, "bold"), text_color=text_color).grid(row=i, column=0, padx=15, pady=8, sticky="w")
+        ctk.CTkLabel(grid_frame, text=split_text, font=("Arial", 14), text_color=text_color).grid(row=i, column=1, padx=15, pady=8, sticky="w")
+        
+        if is_active:
+            ctk.CTkButton(grid_frame, text="View Workout", width=100, height=28, 
+                          command=lambda r=day_data["workouts"], title=f"{day} - {split_text}": render_interactive_checklist(title, r, show_weekly_grid)).grid(row=i, column=2, padx=15, pady=8)
+
+    ctk.CTkButton(menu_panel, text="Regenerate Week", fg_color="#bf3a3a", hover_color="#8c2828", command=show_weekly_wizard).pack(pady=(20, 5))
+    ctk.CTkButton(menu_panel, text="← Home", width=100, fg_color="#555555", command=show_home_screen).pack(pady=10)
+
+# --- INTERACTIVE CHECKLIST RENDERER ---
+def render_interactive_checklist(title, routine, back_command):
+    clear_menu()
+    ctk.CTkLabel(menu_panel, text=title, font=("Arial", 28, "bold")).pack(pady=(20, 5))
+    ctk.CTkLabel(menu_panel, text="Hover over an exercise to see muscles targeted.", text_color="gray").pack(pady=(0, 15))
+    
+    scroll_frame = ctk.CTkScrollableFrame(menu_panel, width=450, height=400)
+    scroll_frame.pack(pady=5)
+    
+    for workout in routine:
+        card = ctk.CTkFrame(scroll_frame, fg_color="#2b2b2b")
+        card.pack(pady=5, padx=10, fill="x")
+        
+        muscle_tag = workout.get("target_muscle_tag", "Default")
+        
+        # The Checkbox
+        cb = ctk.CTkCheckBox(card, text=workout["exercise_name"], font=("Arial", 16, "bold"))
+        cb.pack(anchor="w", padx=10, pady=(10, 2))
+        
+        # NEW: The dynamic Sets/Reps readout using the injected data!
+        sets_reps_text = f"🎯 {workout.get('sets', '-')} Sets | 🔄 {workout.get('reps', '-')} Reps | ⚖️ {workout.get('weight_profile', '-')}"
+        ctk.CTkLabel(card, text=sets_reps_text, font=("Arial", 13, "bold"), text_color="#2fa572").pack(anchor="w", padx=35)
+        
+        # Details
+        ctk.CTkLabel(card, text=f"Intensity: {workout['metrics']['intensity_score']}/10", font=("Arial", 12)).pack(anchor="w", padx=35, pady=(0,5))
+        
+        # THE HOVER BINDING 
+        cb.bind("<Enter>", lambda event, m=muscle_tag: on_hover_enter(event, m))
+        cb.bind("<Leave>", on_hover_leave)
+        card.bind("<Enter>", lambda event, m=muscle_tag: on_hover_enter(event, m))
+        card.bind("<Leave>", on_hover_leave)
+
+    ctk.CTkButton(menu_panel, text="← Back", width=100, fg_color="#555555", command=back_command).pack(pady=(20, 0))
 
 # Boot up!
-update_display() # Load initial blank body
-show_equipment_selection()
+load_schedule()
+show_home_screen()
 app.mainloop()
