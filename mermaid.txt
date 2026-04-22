@@ -1,0 +1,46 @@
+graph TD
+    %% Define Styles
+    classDef prototype fill:#35373B,stroke:#5C8EAD,stroke-width:2px,color:white;
+    classDef setup fill:#eab308,stroke:#ca8a04,stroke-width:2px,color:black;
+    classDef dev fill:#2fa572,stroke:#1e7b53,stroke-width:2px,color:white;
+    classDef deploy fill:#8b5cf6,stroke:#7c3aed,stroke-width:2px,color:white;
+
+    subgraph Phase 1: Prototype Finalization [Current]
+        A[Apply Intense Grey & Soft Blue]:::prototype
+        B[Implement Pill/Brutalist Shapes]:::prototype
+        A --> B
+    end
+
+    subgraph Phase 2: The Flutter Local Environment
+        C[Install Flutter SDK & Dart]:::setup
+        D[Configure Android Studio / iOS Simulator]:::setup
+        E[Link VS Code Flutter Extensions]:::setup
+        B ==> C
+        C --> D --> E
+    end
+
+    subgraph Phase 3: Mobile Reconstruction
+        F[Connect Flutter to Existing FastAPI/MongoDB]:::dev
+        G[Rebuild UI using Flutter 'Widget Trees']:::dev
+        H[Implement Mobile Routing & State]:::dev
+        E ==> F
+        F --> G --> H
+    end
+    
+    subgraph Phase 4: App Store Deployment
+        I[Compile to Native iOS / Android]:::deploy
+        H ==> I
+    end
+
+
+    graph TD
+    %% Define Styles
+    classDef screen fill:#2A2B2E,stroke:#5C8EAD,stroke-width:2px,color:white;
+    classDef action fill:#5C8EAD,stroke:#4A748F,stroke-width:2px,color:white;
+    
+    A[Home Screen]:::screen -->|Tap 'Quick Daily'| B(Push to Stack):::action
+    B --> C[Split Selection Screen]:::screen
+    C -->|Tap 'Upper/Lower'| D(Push to Stack):::action
+    D --> E[Goal Selection Screen]:::screen
+    E -->|Tap 'Back'| F(Pop from Stack):::action
+    F --> C

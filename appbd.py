@@ -13,6 +13,12 @@ ASSET_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets')
 SCHEDULE_FILE = "schedule.json"
 API_URL = "http://127.0.0.1:8000/api/top-workouts"
 
+# COLOR PALETTE
+BG_DARK_GREY = "#2A2B2E"
+PANEL_GREY = "#35373B"
+SOFT_BLUE = "#5C8EAD"
+HOVER_BLUE = "#4A748F"
+
 IMAGE_MAP = {
     "Upper Chest (Clavicular)": {"front": "Tricept_front.png", "back": "Tricepts_back.png"},
     "Middle Chest (Sternal Mid)": {"front": "Tricept_front.png", "back": "Tricepts_back.png"},
@@ -37,7 +43,6 @@ SPLIT_MAP = {
     "Cardio": ["PLACEHOLDER_CARDIO"]
 }
 
-# NEW: The Training Goal Matrix
 GOAL_MAP = {
     "Strength": {"sets": (3, 4), "reps": (3, 6), "weight": "Max Weight"},
     "Hypertrophy": {"sets": (3, 5), "reps": (6, 10), "weight": "Medium Weight"},
@@ -81,7 +86,7 @@ def update_display():
     
     try:
         pil_image = Image.open(img_path)
-        ctk_img = ctk.CTkImage(light_image=pil_image, size=(350, 600))
+        ctk_img = ctk.CTkImage(light_image=pil_image, size=(320, 550))
         image_label.configure(image=ctk_img, text="")
     except FileNotFoundError:
         image_label.configure(image="", text=f"❌ Missing Image:\n{target_filename}")
@@ -126,7 +131,6 @@ def generate_workouts_for_split(split_name, goal_name):
         workout = fetch_workout_for_muscle(m)
         workout["target_muscle_tag"] = m 
         
-        # NEW: Inject Sets, Reps, and Weight based on the Goal
         if m == "PLACEHOLDER_CARDIO" or split_name == "Cardio":
             workout["sets"] = 1
             workout["reps"] = "30 Mins"
@@ -150,18 +154,44 @@ ctk.set_default_color_theme("blue")
 app = ctk.CTk()
 app.geometry("1100x700")
 app.title("Enterprise Fitness Generator")
+app.configure(fg_color=BG_DARK_GREY) # Intense Grey Background
 
-image_panel = ctk.CTkFrame(app, width=450)
+# --- LEFT PANEL: The Anatomy Diagram ---
+image_panel = ctk.CTkFrame(app, width=450, fg_color=PANEL_GREY, corner_radius=0)
 image_panel.pack(side="left", fill="y", padx=20, pady=20)
 
-view_toggle = ctk.CTkSegmentedButton(image_panel, values=["Front", "Back"], command=on_toggle_change)
+control_frame = ctk.CTkFrame(image_panel, fg_color="transparent")
+control_frame.pack(side="top", fill="x", pady=(10, 0))
+
+# Pill-shaped Toggle Switch using Soft Blue
+view_toggle = ctk.CTkSegmentedButton(
+    control_frame, values=["Front", "Back"], command=on_toggle_change,
+    selected_color=SOFT_BLUE, selected_hover_color=HOVER_BLUE, 
+    unselected_color=BG_DARK_GREY, corner_radius=25
+)
 view_toggle.set("Front")
-view_toggle.pack(pady=(20, 10))
+view_toggle.pack(pady=(5, 10))
+
+legend_container = ctk.CTkFrame(control_frame, fg_color="transparent")
+legend_container.pack(pady=(0, 10))
+
+w_frame = ctk.CTkFrame(legend_container, width=12, height=12, fg_color="#FFFFFF", corner_radius=6)
+w_frame.grid(row=0, column=0, padx=(5, 5))
+ctk.CTkLabel(legend_container, text="Resting", font=("Arial", 11)).grid(row=0, column=1, padx=(0, 15))
+
+y_frame = ctk.CTkFrame(legend_container, width=12, height=12, fg_color="#FACC15", corner_radius=6) 
+y_frame.grid(row=0, column=2, padx=(5, 5))
+ctk.CTkLabel(legend_container, text="Secondary", font=("Arial", 11)).grid(row=0, column=3, padx=(0, 15))
+
+r_frame = ctk.CTkFrame(legend_container, width=12, height=12, fg_color="#EF4444", corner_radius=6) 
+r_frame.grid(row=0, column=4, padx=(5, 5))
+ctk.CTkLabel(legend_container, text="Primary", font=("Arial", 11)).grid(row=0, column=5, padx=(0, 5))
 
 image_label = ctk.CTkLabel(image_panel, text="Loading anatomy...")
-image_label.pack(expand=True, pady=10)
+image_label.pack(expand=True, pady=(0, 10))
 
-menu_panel = ctk.CTkFrame(app)
+# --- RIGHT PANEL: The Interactive Menu ---
+menu_panel = ctk.CTkFrame(app, fg_color=PANEL_GREY, corner_radius=0)
 menu_panel.pack(side="right", fill="both", expand=True, padx=20, pady=20)
 
 def clear_menu():
@@ -171,6 +201,14 @@ def clear_menu():
 # ==========================================
 # 6. APP NAVIGATION & MENUS
 # ==========================================
+def create_pill_button(parent, text, command, width=250, is_primary=True):
+    """Helper function to enforce the soft blue pill aesthetic."""
+    bg_color = SOFT_BLUE if is_primary else "#555555"
+    hov_color = HOVER_BLUE if is_primary else "#333333"
+    return ctk.CTkButton(parent, text=text, width=width, height=50, 
+                         fg_color=bg_color, hover_color=hov_color, 
+                         corner_radius=25, font=("Arial", 15, "bold"), command=command)
+
 def show_home_screen():
     clear_menu()
     on_hover_leave(None)
@@ -179,12 +217,10 @@ def show_home_screen():
     date_str = today.strftime("%A, %B %d, %Y")
 
     ctk.CTkLabel(menu_panel, text="Enterprise Fitness", font=("Arial", 32, "bold")).pack(pady=(60, 5))
-    ctk.CTkLabel(menu_panel, text=f"Today is {date_str}", text_color="gray", font=("Arial", 16)).pack(pady=(0, 40))
+    ctk.CTkLabel(menu_panel, text=f"Today is {date_str}", text_color=SOFT_BLUE, font=("Arial", 16)).pack(pady=(0, 40))
 
-    ctk.CTkButton(menu_panel, text="Quick Daily Workout", width=300, height=50, 
-                  command=show_quick_daily_prompt).pack(pady=10)
-    ctk.CTkButton(menu_panel, text="Current Weekly Schedule", width=300, height=50, 
-                  command=show_weekly_grid).pack(pady=10)
+    create_pill_button(menu_panel, "Quick Daily Workout", show_quick_daily_prompt, width=300).pack(pady=10)
+    create_pill_button(menu_panel, "Current Weekly Schedule", show_weekly_grid, width=300).pack(pady=10)
 
 # --- QUICK DAILY WORKOUT ---
 def show_quick_daily_prompt():
@@ -193,25 +229,23 @@ def show_quick_daily_prompt():
     ctk.CTkLabel(menu_panel, text="What are we hitting today?", font=("Arial", 16)).pack(pady=(0, 20))
     
     for split in ["Upper", "Lower", "Cardio"]:
-        ctk.CTkButton(menu_panel, text=split, width=250, height=50, 
-                      command=lambda s=split: show_quick_daily_goal(s)).pack(pady=10)
+        create_pill_button(menu_panel, split, lambda s=split: show_quick_daily_goal(s)).pack(pady=10)
                       
-    ctk.CTkButton(menu_panel, text="← Home", width=100, fg_color="#555555", command=show_home_screen).pack(pady=(30, 0))
+    create_pill_button(menu_panel, "← Home", show_home_screen, width=120, is_primary=False).pack(pady=(30, 0))
 
 def show_quick_daily_goal(split_choice):
     clear_menu()
     ctk.CTkLabel(menu_panel, text="Training Goal", font=("Arial", 28, "bold")).pack(pady=(40, 30))
-    ctk.CTkLabel(menu_panel, text=f"Split: {split_choice}", text_color="#2fa572", font=("Arial", 16)).pack(pady=(0, 20))
+    ctk.CTkLabel(menu_panel, text=f"Split: {split_choice}", text_color=SOFT_BLUE, font=("Arial", 16)).pack(pady=(0, 20))
     
     for goal in ["Strength", "Hypertrophy", "Endurance"]:
-        ctk.CTkButton(menu_panel, text=goal, width=250, height=50, 
-                      command=lambda g=goal: process_quick_daily(split_choice, g)).pack(pady=10)
+        create_pill_button(menu_panel, goal, lambda g=goal: process_quick_daily(split_choice, g)).pack(pady=10)
                       
-    ctk.CTkButton(menu_panel, text="← Back", width=100, fg_color="#555555", command=show_quick_daily_prompt).pack(pady=(30, 0))
+    create_pill_button(menu_panel, "← Back", show_quick_daily_prompt, width=120, is_primary=False).pack(pady=(30, 0))
 
 def process_quick_daily(split_choice, goal_choice):
     clear_menu()
-    ctk.CTkLabel(menu_panel, text="Consulting Database...", font=("Arial", 24, "bold"), text_color="#2fa572").pack(pady=100)
+    ctk.CTkLabel(menu_panel, text="Consulting Database...", font=("Arial", 24, "bold"), text_color=SOFT_BLUE).pack(pady=100)
     app.update() 
     
     routine = generate_workouts_for_split(split_choice, goal_choice)
@@ -222,19 +256,22 @@ def show_weekly_wizard():
     clear_menu()
     ctk.CTkLabel(menu_panel, text="Schedule Architect", font=("Arial", 28, "bold")).pack(pady=(20, 20))
     
-    # 1. Choose Split Sequence
     ctk.CTkLabel(menu_panel, text="1. Select Weekly Flow:", font=("Arial", 16)).pack(anchor="w", padx=40)
     split_var = ctk.StringVar(value="Push, Pull, Legs")
-    split_dropdown = ctk.CTkOptionMenu(menu_panel, variable=split_var, values=["Push, Pull, Legs", "Upper, Lower", "Upper, Lower, Cardio"])
+    split_dropdown = ctk.CTkOptionMenu(
+        menu_panel, variable=split_var, values=["Push, Pull, Legs", "Upper, Lower", "Upper, Lower, Cardio"],
+        fg_color=SOFT_BLUE, button_color=HOVER_BLUE, button_hover_color=BG_DARK_GREY, corner_radius=25
+    )
     split_dropdown.pack(pady=(5, 10), padx=40, fill="x")
     
-    # 2. Choose Training Goal
     ctk.CTkLabel(menu_panel, text="2. Select Training Goal:", font=("Arial", 16)).pack(anchor="w", padx=40)
     goal_var = ctk.StringVar(value="Hypertrophy")
-    goal_dropdown = ctk.CTkOptionMenu(menu_panel, variable=goal_var, values=["Strength", "Hypertrophy", "Endurance"])
+    goal_dropdown = ctk.CTkOptionMenu(
+        menu_panel, variable=goal_var, values=["Strength", "Hypertrophy", "Endurance"],
+        fg_color=SOFT_BLUE, button_color=HOVER_BLUE, button_hover_color=BG_DARK_GREY, corner_radius=25
+    )
     goal_dropdown.pack(pady=(5, 15), padx=40, fill="x")
 
-    # 3. Toggle Days
     ctk.CTkLabel(menu_panel, text="3. Set Active Training Days:", font=("Arial", 16)).pack(anchor="w", padx=40)
     days_of_week = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
     day_switches = {}
@@ -244,14 +281,13 @@ def show_weekly_wizard():
     
     for day in days_of_week:
         var = ctk.BooleanVar(value=True if day not in ["Saturday", "Sunday"] else False)
-        switch = ctk.CTkSwitch(switches_frame, text=day, variable=var)
+        switch = ctk.CTkSwitch(switches_frame, text=day, variable=var, progress_color=SOFT_BLUE)
         switch.pack(pady=2, anchor="w")
         day_switches[day] = var
 
-    # Build Button
     def execute_build():
         clear_menu()
-        ctk.CTkLabel(menu_panel, text="Generating Week...", font=("Arial", 24, "bold"), text_color="#2fa572").pack(pady=100)
+        ctk.CTkLabel(menu_panel, text="Generating Week...", font=("Arial", 24, "bold"), text_color=SOFT_BLUE).pack(pady=100)
         app.update()
         
         sequence_choice = split_var.get().split(", ")
@@ -273,8 +309,8 @@ def show_weekly_wizard():
         save_schedule()
         show_weekly_grid()
 
-    ctk.CTkButton(menu_panel, text="Generate Schedule", width=300, height=40, fg_color="#bf3a3a", hover_color="#8c2828", command=execute_build).pack(pady=15)
-    ctk.CTkButton(menu_panel, text="Cancel", width=100, fg_color="#555555", command=show_weekly_grid).pack(pady=5)
+    create_pill_button(menu_panel, "Generate Schedule", execute_build, width=300).pack(pady=15)
+    create_pill_button(menu_panel, "Cancel", show_weekly_grid, width=120, is_primary=False).pack(pady=5)
 
 def show_weekly_grid():
     clear_menu()
@@ -295,11 +331,14 @@ def show_weekly_grid():
         ctk.CTkLabel(grid_frame, text=split_text, font=("Arial", 14), text_color=text_color).grid(row=i, column=1, padx=15, pady=8, sticky="w")
         
         if is_active:
-            ctk.CTkButton(grid_frame, text="View Workout", width=100, height=28, 
-                          command=lambda r=day_data["workouts"], title=f"{day} - {split_text}": render_interactive_checklist(title, r, show_weekly_grid)).grid(row=i, column=2, padx=15, pady=8)
+            # Brutalist sharp button for the data grid interaction
+            ctk.CTkButton(
+                grid_frame, text="View Workout", width=100, height=28, fg_color=SOFT_BLUE, hover_color=HOVER_BLUE, corner_radius=0,
+                command=lambda r=day_data["workouts"], title=f"{day} - {split_text}": render_interactive_checklist(title, r, show_weekly_grid)
+            ).grid(row=i, column=2, padx=15, pady=8)
 
-    ctk.CTkButton(menu_panel, text="Regenerate Week", fg_color="#bf3a3a", hover_color="#8c2828", command=show_weekly_wizard).pack(pady=(20, 5))
-    ctk.CTkButton(menu_panel, text="← Home", width=100, fg_color="#555555", command=show_home_screen).pack(pady=10)
+    create_pill_button(menu_panel, "Regenerate Week", show_weekly_wizard, width=250).pack(pady=(20, 5))
+    create_pill_button(menu_panel, "← Home", show_home_screen, width=120, is_primary=False).pack(pady=10)
 
 # --- INTERACTIVE CHECKLIST RENDERER ---
 def render_interactive_checklist(title, routine, back_command):
@@ -307,33 +346,31 @@ def render_interactive_checklist(title, routine, back_command):
     ctk.CTkLabel(menu_panel, text=title, font=("Arial", 28, "bold")).pack(pady=(20, 5))
     ctk.CTkLabel(menu_panel, text="Hover over an exercise to see muscles targeted.", text_color="gray").pack(pady=(0, 15))
     
-    scroll_frame = ctk.CTkScrollableFrame(menu_panel, width=450, height=400)
+    scroll_frame = ctk.CTkScrollableFrame(menu_panel, width=450, height=400, fg_color="transparent")
     scroll_frame.pack(pady=5)
     
     for workout in routine:
-        card = ctk.CTkFrame(scroll_frame, fg_color="#2b2b2b")
+        # Brutalist Data Card
+        card = ctk.CTkFrame(scroll_frame, fg_color=BG_DARK_GREY, corner_radius=0)
         card.pack(pady=5, padx=10, fill="x")
         
         muscle_tag = workout.get("target_muscle_tag", "Default")
         
-        # The Checkbox
-        cb = ctk.CTkCheckBox(card, text=workout["exercise_name"], font=("Arial", 16, "bold"))
+        cb = ctk.CTkCheckBox(card, text=workout["exercise_name"], font=("Arial", 16, "bold"), 
+                             fg_color=SOFT_BLUE, hover_color=HOVER_BLUE, corner_radius=0)
         cb.pack(anchor="w", padx=10, pady=(10, 2))
         
-        # NEW: The dynamic Sets/Reps readout using the injected data!
         sets_reps_text = f"🎯 {workout.get('sets', '-')} Sets | 🔄 {workout.get('reps', '-')} Reps | ⚖️ {workout.get('weight_profile', '-')}"
-        ctk.CTkLabel(card, text=sets_reps_text, font=("Arial", 13, "bold"), text_color="#2fa572").pack(anchor="w", padx=35)
+        ctk.CTkLabel(card, text=sets_reps_text, font=("Arial", 13, "bold"), text_color=SOFT_BLUE).pack(anchor="w", padx=35)
         
-        # Details
         ctk.CTkLabel(card, text=f"Intensity: {workout['metrics']['intensity_score']}/10", font=("Arial", 12)).pack(anchor="w", padx=35, pady=(0,5))
         
-        # THE HOVER BINDING 
         cb.bind("<Enter>", lambda event, m=muscle_tag: on_hover_enter(event, m))
         cb.bind("<Leave>", on_hover_leave)
         card.bind("<Enter>", lambda event, m=muscle_tag: on_hover_enter(event, m))
         card.bind("<Leave>", on_hover_leave)
 
-    ctk.CTkButton(menu_panel, text="← Back", width=100, fg_color="#555555", command=back_command).pack(pady=(20, 0))
+    create_pill_button(menu_panel, "← Back", back_command, width=120, is_primary=False).pack(pady=(20, 0))
 
 # Boot up!
 load_schedule()
